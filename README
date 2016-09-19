@@ -1,0 +1,100 @@
+Readme for httpd server v0.1 *Still in alpha*
+
+  *Table of contents*
+
+1 => About application
+	|- info about this application
+2 => Usage
+	|- how to use this application
+3 => Implement description
+	|- Description about how the server is implemented
+4 => File tree
+	|- File tree and comments about each file
+5 => Comments
+	|- Other comments about application
+6 => Version History
+	|- Version history for implemented features
+
+
+---------------------------------------------------------------
+1 => About application
+
+
+---------------------------------------------------------------
+2 => Usage
+
+./httpd [PORT]
+
+[PORT] - port number that is not in use on this system
+
+For developement:
+	$ make                (Will compile the server)
+	$ make & make install (Will compile the server and install) (*needs evelated priveledges* **root access in most cases**)
+	$ make distclean	  (Will clean all compiled .o and application files)
+---------------------------------------------------------------
+3 => Implement description
+
+httpd.c: 
+	
+--------------------------
+server.c: (server.h)
+	runServer():
+		Runs the server in infinit loop and waits for connection to socket.
+		when a message is received from socket it returns it to decodeMessage().
+
+--------------------------
+printing.c: (printing.h)
+	printToOutput():
+		Prints input message to the stdout, put concats a timestamp to the output.
+
+	printToOutputRequest():
+		Prints to stdout the request , filename and ipaddress:port of client connecting, also gets timestamp concated to the output.
+
+	printToOutputError():
+		Prints to the stdout all error messages that are sent to client, that is opcode error.
+
+	printBanner():
+		Only prints the beutyful banner on start, *So pretty*
+--------------------------
+debugging.c: (debugging.h)  // note this is only for debugging the applictaion.
+	// to be able to use these functions please change the "#define debug" macro inside debugging.h to 1 etc. (#define debug 1)
+
+	printTime():
+		Function that only prints out the exact server time to the output (note: SERVER TIME)
+
+	debugS():
+		For writing strings to the output from other functions, concats the timestamp and "[DEBUG]" to the output so the user knows what info is what info.
+
+	debugD():
+		For writing strings with integer values to the stdout, concats timestamp and "[DEBUG]" to the string.
+
+	debugSockAddr():
+		for sockaddr and sockaddr_in debugging
+
+	debugMessage():
+		for debugging packages sent over the socket.
+
+---------------------------------------------------------------
+4 =>File tree for pa1 folder
+.
+├── AUTHORS		*List of authors*
+├── data		*Data directory*
+├── pa2.pdf		*PDF file for project, about implementation*
+├── README		*THIS FILE!!*
+└── src			*src folder*
+    ├── libs		*Library folder*
+    │   ├── debugging.c	*Debugging c file*
+    │   ├── debugging.h *Debugging header file*
+    │   ├── printing.c	*Printing c file*
+    │   ├── printing.h	*Printing header file*
+    │   ├── server.c	*Server c file*
+    │   └── server.h	*Server header file*
+    ├── Makefile	*Makefile for the server application*
+    └── httpd.c		*The main code file*
+
+---------------------------------------------------------------
+5 => Comments
+
+
+---------------------------------------------------------------
+6 => Version History
