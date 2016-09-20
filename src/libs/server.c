@@ -1,13 +1,7 @@
 #include "server.h"
 
-
-int runServer(int PortNum)
+void sockInit(int *sockfd)
 {
-	int sockfd = -1;
-	int retErr = -1;
-    struct sockaddr_in server, client;
-    fd_set readSocketFd;
-
     /*  
      *  From man page
      *  SOCK_STREAM
@@ -20,6 +14,16 @@ int runServer(int PortNum)
     }
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 0, sizeof(SO_REUSEADDR));  //set reuse of address
     setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT , 0, sizeof(SO_REUSEPORT ));  //set reuse of port
+}
+
+int runServer(int PortNum)
+{
+	int sockfd = -1;
+	int retErr = -1;
+    struct sockaddr_in server, client;
+    fd_set readSocketFd;
+    sockInit(&sockfd); //initalize socket
+
 
     /* Lets zero config the server sockaddr struct */
     memset(&server, 0, sizeof(server));
