@@ -27,5 +27,5 @@
 
 int runServer(int PortNum);
 int checkIfNewClient(int sockfd, fd_set* readSocketFd, struct sockaddr_in *client, int clientLen);
-void sockInit(int *sockfd);
+void sockInit(int sockfd);
 #endif

@@ -22,7 +22,7 @@ int runServer(int PortNum)
 	int retErr = -1;
     struct sockaddr_in server, client;
     fd_set readSocketFd;
-    sockInit(&sockfd); //initalize socket
+    sockInit(sockfd); //initalize socket
 
 
     /* Lets zero config the server sockaddr struct */
