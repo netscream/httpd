@@ -18,7 +18,8 @@ int runServer(int PortNum)
         perror("Unable to create socket: ");
         return -1; // no use to continue if no socket, return -1 with error.
     }
-    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 0, sizeof(SO_REUSEADDR));
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, 0, sizeof(SO_REUSEADDR));  //set reuse of address
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEPORT , 0, sizeof(SO_REUSEPORT ));  //set reuse of port
 
     /* Lets zero config the server sockaddr struct */
     memset(&server, 0, sizeof(server));
