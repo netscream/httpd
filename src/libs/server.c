@@ -1,6 +1,6 @@
 #include "server.h"
 
-void sockInit(int *sockfd)
+void sockInit(int sockfd)
 {
     /*  
      *  From man page
