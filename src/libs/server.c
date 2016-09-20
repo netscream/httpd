@@ -18,6 +18,7 @@ int runServer(int PortNum)
         perror("Unable to create socket: ");
         return -1; // no use to continue if no socket, return -1 with error.
     }
+    setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, len(SO_REUSEADDR));
 
     /* Lets zero config the server sockaddr struct */
     memset(&server, 0, sizeof(server));
@@ -44,21 +45,14 @@ int runServer(int PortNum)
     while(1)
     {
     	char message[512];
+        memset(&message, 0, sizeof(message));
         int newConnectionFd = -1;
         struct timeval intTime;
         intTime.tv_sec = 5;
-    	memset(&message, 0, sizeof(message));
 		int retSel = -1;
         socklen_t clientLen = (socklen_t) sizeof(client);
         
-        /*newConnectionFd = accept(sockfd, (struct sockaddr *) &client, &clientLen);
-        if (newConnectionFd == -1)
-        {
-        	perror("Accept error:");
-        }
-        debugS("Accepted connection");*/
         debugS("Before select()");
-        //retSel = select(sockfd+1, &readSocketFd, 0, 0, 0);
         if ((retSel = select(sockfd+1, &readSocketFd, 0, 0, &intTime)) == -1)
         {
             perror("Select() error: ");
