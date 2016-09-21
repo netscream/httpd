@@ -26,6 +26,8 @@
 #define LOGFILE "./log/httpd.log"
 
 int runServer(int PortNum);
-int checkIfNewClient(int sockfd, fd_set* readSocketFd, struct sockaddr_in *client, int clientLen);
-void sockInit(int *sockfd);
+int sockInit();
+struct sockaddr_in serverStructInit(int PortNum);
+void bindListenInit(struct sockaddr_in server, int sockfd);
+
 #endif
