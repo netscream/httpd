@@ -12,19 +12,19 @@ INSTALLDIR = /usr/local/bin
 all: httpdserver
 
 httpdserver: debugging.o printing.o server.o httpd.o
-	${CC} ${CFLAGS} debugging.o printing.o server.o httpd.o -o httpd
+	${CC} ${CFLAGS} ${GLIBS} debugging.o printing.o server.o httpd.o -o httpd
 
 debugging.o: libs/debugging.c
-	${CC} ${CFLAGS} libs/debugging.c -c
+	${CC} ${CFLAGS} ${GLIBS} libs/debugging.c -c
 
 printing.o: libs/printing.c
-	${CC} ${CFLAGS} libs/printing.c -c
+	${CC} ${CFLAGS} ${GLIBS} libs/printing.c -c
 
 server.o: libs/server.c
-	${CC} ${GLIBS} ${CFLAGS} libs/server.c -c
+	${CC} ${CFLAGS} ${GLIBS} libs/server.c -c
 
 httpd.o: httpd.c
-	${CC} ${GLIBS} ${CFLAGS} httpd.c -c
+	${CC} ${CFLAGS} ${GLIBS} httpd.c -c
 
 install: httpd
 	install -m 0755 httpd ${INSTALLDIR}

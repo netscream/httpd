@@ -22,6 +22,7 @@ void debugS(char* message)
         printTime();
         fprintf(stdout, "[Debug] %s\n", message);
     }
+    fflush(stdout);
 }
 /* void function() 
  * for debugging decimal 
@@ -33,6 +34,7 @@ void debugD(char* message, int id)
         printTime();
         fprintf(stdout, "[Debug] %s %d\n", message, id);
     }
+    fflush(stdout);
 }
 /* void function() 
  * for debugging hex 
@@ -54,14 +56,15 @@ void debugSockAddr(char* message, struct sockaddr_in clientAddr)
         {
             printf("[Debug] Client port = %d\n", ntohs(clientAddr.sin_port));
         }
-        
+        fflush(stdout);
     }
 }
 /* void debugMessage()
  * for debugging messages in TFTP server
  */
 void debugMessage(char* message, size_t mSize)
-{   if (deBug)
+{   
+    if (deBug)
     {
         printTime();
         printf("[Debug] ");
@@ -72,8 +75,25 @@ void debugMessage(char* message, size_t mSize)
         printf(" of size = %lu", mSize);
         printf("\n");
     } 
-    debugD("Message has opcode: ", message[1]);
-    debugD("Message has blockno: ", message[3]);
+}
+
+void debugGMessage(gchar** message, size_t mSize)
+{   
+    if (deBug)
+    {
+        if (message != NULL)
+        {
+            printTime();
+            printf("[Debug] \n");
+            for(size_t i = 0; i < mSize; i++)
+            {
+                printf("%s\n", message[i]);
+                //g_assert(g_printf("%s", message[i]));
+            }
+            printf("\n of size = %lu", mSize);
+            printf("\n");
+        }
+    } 
 }
 /*
     Debugging done

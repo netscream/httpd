@@ -65,6 +65,21 @@ void printBanner()
     printf("|   HTTPD server for tsam course               |\n");
     printf("|   Authors:                                   |\n");
     printf("|   Hlynur Hansen, hlynur14@ru.is              |\n");
-    printf("|   Magnus Vilhelm Bjornsson, magnusvb14@ru.is |\n");
     printf("------------------------------------------------\n");
+}
+
+void getHeaderTime(char* buffer, int mode)
+{
+    time_t timer = time(NULL); 
+    struct tm *loctime;
+    loctime = localtime(&timer);
+    if (mode == 1)
+    {
+        strftime(buffer, 40, "%c", loctime);
+    }
+    else
+    if (mode == 2)
+    {
+        strftime(buffer, 21, "%F %T", loctime); //hh:mm:ss
+    }
 }
