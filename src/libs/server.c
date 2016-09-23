@@ -150,7 +150,6 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         debugS("POST");
         gchar** splitPostMessage = g_strsplit((gchar*) message, (gchar*) "\n", -1);
         gchar* postContent = splitPostMessage[g_strv_length(splitPostMessage)-1];
-        //printf("THIS IS THE CONTENT %s\n", postContent);
         char bufferHTML[2048];
         char bufferHEAD[512];
         memset(&bufferHTML, 0, 2048 );
@@ -159,6 +158,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         createHeader(bufferHEAD, sizeof(bufferHTML));
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
+        g_free(postContent);
         g_strfreev(splitPostMessage);
     }
     else    
