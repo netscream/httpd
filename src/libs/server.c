@@ -132,7 +132,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
     char* response = "HTTP/1.1 200 OK";
     char* request = splitMessage[0];
     char* requestedURL = splitMessage[1];
-    if (g_str_has_prefix(splitMessage[0], (gchar*) HTTP_GET))
+    if (g_str_has_prefix(splitMessage[0], HTTP_GET))
     {
         debugS("GET");
         char bufferHTML[2048];
@@ -145,7 +145,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
     }
     else
-    if (g_str_has_prefix(splitMessage[0], (gchar*) HTTP_POST))
+    if (g_str_has_prefix(splitMessage[0], HTTP_POST))
     {
         debugS("POST");
         gchar** splitPostMessage = g_strsplit((gchar*) message, (gchar*) "\n", -1);
@@ -162,7 +162,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         g_strfreev(splitPostMessage);
     }
     else    
-    if (g_str_has_prefix(splitMessage[0], (gchar*) HTTP_HEAD))
+    if (g_str_has_prefix(splitMessage[0], HTTP_HEAD))
     {
         debugS("HEAD");
         char header[512];
