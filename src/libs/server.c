@@ -178,8 +178,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         }
     }
     logToFile(*client, request, response, requestedURL);
-    g_free(splitMessage);
-    //g_strfreev(splitMessage);
+    g_strfreev(splitMessage);
 }
 
 void logToFile(struct sockaddr_in client, char* request, char* response, char* requestedUrl)
@@ -264,8 +263,8 @@ void generateHTML(char* buffer, struct sockaddr_in client, int method, char* pos
         strcat(buffer, "<body style=\"background-color:");
         strcat(buffer, getColor[1]);
         strcat(buffer, "\">");
-        //g_strfreev(getColor);strcat(buffer, "</body>\n");
-        g_free(getColor);
+        g_strfreev(getColor);
+        
     }
     else
     {
