@@ -126,8 +126,8 @@ void bindListenInit(struct sockaddr_in server, int sockfd)
 
 void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* message)
 {
-    gchar** splitMessage = g_strsplit(message, " ", -1); //-1 = null terminate
-    
+    //gchar** splitMessage = g_strsplit(message, " ", -1); //-1 = null terminate
+    gchar** splitMessage = NULL;
     /*debugGMessage(splitMessage, g_strv_length(splitMessage));
     char* response = "HTTP/1.1 200 OK";
     char* request = splitMessage[0];
