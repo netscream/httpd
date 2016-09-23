@@ -27,9 +27,6 @@
 #define HTTP_HEAD "HEAD"
 #define COLOR_PREFIX "/colour?bg="
 /* end of HTTP specific macros */
-struct REQUESTSTUFF {
-
-} REQUESTSTUFF;
 #define LOGFILE "httpd.log"
 
 int runServer(int PortNum);

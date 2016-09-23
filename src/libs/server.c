@@ -160,7 +160,8 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         createHeader(bufferHEAD, sizeof(bufferHTML));
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
-        g_strfreev(splitPostMessage);
+        //g_strfreev(splitPostMessage);
+        g_free(splitPostMessage);
     }
     else    
     if (g_str_has_prefix(splitMessage[0], (gchar*) HTTP_HEAD))
@@ -177,7 +178,8 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         }
     }
     logToFile(*client, request, response, requestedURL);
-    g_strfreev(splitMessage);
+    g_free(splitMessage);
+    //g_strfreev(splitMessage);
 }
 
 void logToFile(struct sockaddr_in client, char* request, char* response, char* requestedUrl)
@@ -261,8 +263,9 @@ void generateHTML(char* buffer, struct sockaddr_in client, int method, char* pos
         gchar** getColor = g_strsplit(requestPage, "=", -1); //-1 = null terminate
         strcat(buffer, "<body style=\"background-color:");
         strcat(buffer, getColor[1]);
-        strcat(buffer, "\"> </body>");
-        //g_strfreev(getColor);
+        strcat(buffer, "\">");
+        //g_strfreev(getColor);strcat(buffer, "</body>\n");
+        g_free(getColor);
     }
     else
     {
