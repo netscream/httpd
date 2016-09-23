@@ -128,10 +128,13 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
 {
     gchar** splitMessage = g_strsplit(message, " ", -1); //-1 = null terminate
     
-    debugGMessage(splitMessage, g_strv_length(splitMessage));
+    /*debugGMessage(splitMessage, g_strv_length(splitMessage));
     char* response = "HTTP/1.1 200 OK";
     char* request = splitMessage[0];
-    char* requestedURL = splitMessage[1];
+    char* requestedURL = splitMessage[1];*/
+    char* response = NULL;
+    char* request = NULL;
+    char* requestedURL = NULL;
     if (g_str_has_prefix(splitMessage[0], HTTP_GET))
     {
         debugS("GET");
@@ -175,7 +178,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
             perror("Write error: ");
         }
     }
-    logToFile(*client, request, response, requestedURL);
+    //logToFile(*client, request, response, requestedURL);
     g_strfreev(splitMessage);
 }
 
