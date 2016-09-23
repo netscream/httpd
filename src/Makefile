@@ -1,6 +1,7 @@
 CC = gcc
+DEBUG = -g3
 CPPFLAGS =
-CFLAGS = -std=c11 -D_XOPEN_SOURCE=700 -O2 -Wall -Wextra -Wformat=2
+CFLAGS = ${DEBUG} -std=c11 -D_XOPEN_SOURCE=700 -O2 -Wall -Wextra -Wformat=2
 LDFLAGS =
 LOADLIBES =
 LDLIBS = 

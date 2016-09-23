@@ -1,7 +1,11 @@
 #include "server.h"
 
 
-
+/*
+ * Function runServer
+ * The main server function
+ * Creates a loop for the server run
+ */
 int runServer(int PortNum)
 {
 	int sockfd = -1;
@@ -50,7 +54,7 @@ int runServer(int PortNum)
                         }
                         message[sizeof(message)-1] = 0;
                         debugSockAddr(message, client);
-                        decodeMessage(newConnectionFd, &client, clientLen, message);
+                        decodeMessage(newConnectionFd, &client, message);
                         shutdown(newConnectionFd, SHUT_RDWR);
                         close(newConnectionFd);
                     }
@@ -124,28 +128,30 @@ void bindListenInit(struct sockaddr_in server, int sockfd)
     }
 }
 
-void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* message)
+/*
+ * Function decodeMessage
+ * Void function for decoding of recvd message.
+ * Calls appropiate functions if HEADER contains "GET, POST or HEAD"
+ */
+void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
 {
-    //gchar** splitMessage = g_strsplit(message, " ", -1); //-1 = null terminate
-    gchar** splitMessage = NULL;
-    /*debugGMessage(splitMessage, g_strv_length(splitMessage));
+    gchar** splitMessage = g_strsplit(message, " ", 3); //-1 = null terminate
+    
+    debugGMessage(splitMessage, g_strv_length(splitMessage));
     char* response = "HTTP/1.1 200 OK";
     char* request = splitMessage[0];
-    char* requestedURL = splitMessage[1];*/
-    char* response = NULL;
-    char* request = NULL;
-    char* requestedURL = NULL;
+    char* requestedURL = splitMessage[1];
     if (g_str_has_prefix(splitMessage[0], HTTP_GET))
     {
         debugS("GET");
-        /*char bufferHTML[2048];
+        char bufferHTML[2048];
         char bufferHEAD[512];
         memset(&bufferHTML, 0, 2048 );
         memset(&bufferHEAD, 0, 512);
         generateHTML(bufferHTML, *client, 0, NULL, requestedURL);
         createHeader(bufferHEAD, sizeof(bufferHTML));
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
-        write(sockfd, &bufferHTML, sizeof(bufferHTML));*/
+        write(sockfd, &bufferHTML, sizeof(bufferHTML));
     }
     else
     if (g_str_has_prefix(splitMessage[0], HTTP_POST))
@@ -178,10 +184,14 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
             perror("Write error: ");
         }
     }
-    //logToFile(*client, request, response, requestedURL);
+    logToFile(*client, request, response, requestedURL);
     g_strfreev(splitMessage);
 }
 
+/*
+ * Function logToFile
+ * For logfile creation and maintenance
+ */
 void logToFile(struct sockaddr_in client, char* request, char* response, char* requestedUrl)
 {
     int len = 20;
@@ -216,6 +226,10 @@ void logToFile(struct sockaddr_in client, char* request, char* response, char* r
     return;
 }
 
+/*
+ * Function createHeader
+ * Creates the HEADER buffer
+ */
 void createHeader(char* header, int sizeOfContent)
 {
     char theTime[40];
@@ -236,6 +250,10 @@ void createHeader(char* header, int sizeOfContent)
     return;
 }
 
+/*
+ * Function generateHTML
+ * Creates the HTML code buffer, for writing to appropiate filedescriptor
+ */
 void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage)
 {
 
