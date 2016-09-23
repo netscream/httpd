@@ -135,14 +135,14 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
     if (g_str_has_prefix(splitMessage[0], HTTP_GET))
     {
         debugS("GET");
-        char bufferHTML[2048];
+        /*char bufferHTML[2048];
         char bufferHEAD[512];
         memset(&bufferHTML, 0, 2048 );
         memset(&bufferHEAD, 0, 512);
         generateHTML(bufferHTML, *client, 0, NULL, requestedURL);
         createHeader(bufferHEAD, sizeof(bufferHTML));
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
-        write(sockfd, &bufferHTML, sizeof(bufferHTML));
+        write(sockfd, &bufferHTML, sizeof(bufferHTML));*/
     }
     else
     if (g_str_has_prefix(splitMessage[0], HTTP_POST))
@@ -152,7 +152,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, int clientLen, char* 
         gchar* postContent = splitPostMessage[g_strv_length(splitPostMessage)-1];
         char bufferHTML[2048];
         char bufferHEAD[512];
-        memset(&bufferHTML, 0, 2048 );
+        memset(&bufferHTML, 0, 2048);
         memset(&bufferHEAD, 0, 512);
         generateHTML(bufferHTML, *client, 1, postContent, requestedURL);
         createHeader(bufferHEAD, sizeof(bufferHTML));
