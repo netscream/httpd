@@ -62,12 +62,20 @@ void printToOutputError(char* message, struct sockaddr_in clientAddr)
 void printBanner()
 {
     printf("------------------------------------------------\n");
-    printf("|   HTTPD server for tsam course               |\n");
+    printf("|         HTTPD server for tsam course         |\n");
     printf("|   Authors:                                   |\n");
-    printf("|   Hlynur Hansen, hlynur14@ru.is              |\n");
+    printf("|   Arnar Bjarni Arnarsson  <arnara14@ru.is>   |\n");
+    printf("|   Hlynur Hansen           <hlynur14@ru.is>   |\n");
     printf("------------------------------------------------\n");
 }
 
+/*
+ * Function getHeaderTime
+ * For time configurations header and logfile
+ * mode:
+ *     1 = HEADER
+ *     2 = logfile
+ */
 void getHeaderTime(char* buffer, int mode)
 {
     time_t timer = time(NULL); 
@@ -75,7 +83,7 @@ void getHeaderTime(char* buffer, int mode)
     loctime = localtime(&timer);
     if (mode == 1)
     {
-        strftime(buffer, 40, "%c", loctime);
+        strftime(buffer, 40, "%a, %d %b %G %T, %Z", loctime); //day,name, daynumber, monthname, year(4), time(24hr), timezone
     }
     else
     if (mode == 2)

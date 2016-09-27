@@ -24,6 +24,21 @@ void debugS(char* message)
     }
     fflush(stdout);
 }
+
+/*
+ * void Function debugTwoS
+ * For debugging 2 values from strings
+ */
+void debugTwoS(char* outputMessage, char* outputValue)
+{
+    if (deBug)
+    {
+        printTime();
+        fprintf(stdout, "[Debug] %s=%s\n", outputMessage, outputValue);
+    }
+    fflush(stdout);
+}
+
 /* void function() 
  * for debugging decimal 
  */
@@ -36,6 +51,7 @@ void debugD(char* message, int id)
     }
     fflush(stdout);
 }
+
 /* void function() 
  * for debugging hex 
  */
@@ -77,6 +93,10 @@ void debugMessage(char* message, size_t mSize)
     } 
 }
 
+/*
+ * function debugGMessage
+ * For debugging of double pointer message from glib
+ */
 void debugGMessage(gchar** message, size_t mSize)
 {   
     if (deBug)
@@ -94,6 +114,28 @@ void debugGMessage(gchar** message, size_t mSize)
             printf("\n");
         }
     } 
+}
+
+/*
+ * Function debugGHashTable
+ * For hash table debugging
+ */
+void debugGHashTable(GHashTable* theHashTable)
+{
+    if (deBug)
+    {
+        printTime();
+        printf("[Debug] HashTable list \n");
+        GHashTableIter elementIterator;
+        g_hash_table_iter_init(&elementIterator, theHashTable);
+        gpointer hashKey, hashValue;  //gpointer used because expecting void**
+        while(g_hash_table_iter_next(&elementIterator, &hashKey, &hashValue))
+        {
+            printf("key=%s and value=%s\n", (gchar*) hashKey, (gchar*) hashValue);
+        }
+        printTime();
+        printf("[Debug] End of HashTable list\n");
+    }
 }
 /*
     Debugging done

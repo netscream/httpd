@@ -25,7 +25,7 @@
 #define HTTP_GET "GET"
 #define HTTP_POST "POST"
 #define HTTP_HEAD "HEAD"
-#define COLOR_PREFIX "/colour?bg="
+#define COLOR_BG_PREFIX "colour?bg"
 /* end of HTTP specific macros */
 #define LOGFILE "httpd.log"
 
@@ -36,5 +36,8 @@ void bindListenInit(struct sockaddr_in server, int sockfd);
 void decodeMessage(int sockfd, struct sockaddr_in *client, char* message);
 void logToFile(struct sockaddr_in client, char* request, char* response, char* requestedUrl);
 void createHeader(char* header, int sizeOfContent);
-void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage);
+void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage, GHashTable* requestHashTable);
+void createUriHashTable(char* urlFromMessage, GHashTable* uriElements);
+void deleteAllUriHashTable(GHashTable* uriElements);
+gchar* keyToValueFromHashtable(GHashTable* uriElements, gchar* key);
 #endif

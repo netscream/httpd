@@ -13,6 +13,6 @@ int main(int argc, char *argv[])
     }
     int PortNo; //define portnumber
     PortNo = atoi(argv[1]);
-
+    printBanner();
 	return runServer(PortNo);
 }
