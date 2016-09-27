@@ -6,6 +6,12 @@ Readme for httpd server v0.1 *Still in alpha*
 	|- info about this application
 2 => Usage
 	|- how to use this application
+	2.1 => testing
+		|- How to test
+		|- GET request
+		|- POST request
+		|- HEADER request
+		|- other options
 3 => Implement description
 	|- Description about how the server is implemented
 4 => File tree
@@ -18,7 +24,9 @@ Readme for httpd server v0.1 *Still in alpha*
 
 ---------------------------------------------------------------
 1 => About application
-
+Most of debugging and printing options copied from TFTP assignment.
+ghashtable implemented for hashing of attributes from URL
+htttp server made persistand.
 
 ---------------------------------------------------------------
 2 => Usage
@@ -31,6 +39,21 @@ For developement:
 	$ make                (Will compile the server)
 	$ make & make install (Will compile the server and install) (*needs evelated priveledges* **root access in most cases**)
 	$ make distclean	  (Will clean all compiled .o and application files)
+
+	2.1 => testing
+	For testing use CURL
+	PORT = port from starting server
+
+		2.1.1 => GET request
+			curl -i http://127.0.0.1:PORT
+		2.1.2 => POST request
+			curl -i -d "Some new TEXT" http://127.0.0.1:PORT
+		2.1.3 => HEAD request
+			curl -i -X HEAD http://127.0.0.1:PORT
+		2.1.4 => Arguments in URL
+			curl -i http://127.0.0.1:PORT/colour?bg=COLOR
+				where color = red, blue, green, black, white .... you get the point ;)
+
 ---------------------------------------------------------------
 3 => Implement description
 

@@ -170,7 +170,6 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         createHeader(bufferHEAD, sizeof(bufferHTML));
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
-        g_free(postContent);
         g_strfreev(splitPostMessage);
     }
     else    
@@ -199,6 +198,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
  */
 void logToFile(struct sockaddr_in client, char* request, char* response, char* requestedUrl)
 {
+    debugS("Logging to file");
     int len = 20;
     char clBugg[len];
     char buffer[512];
@@ -207,12 +207,14 @@ void logToFile(struct sockaddr_in client, char* request, char* response, char* r
     char portID[2];
     sprintf(portID,"%d", ntohs(client.sin_port));
     getHeaderTime(theTime, 2);
-    FILE *fp;
-    fp = fopen(LOGFILE, "a+");
-    if (fp == NULL)
+    FILE* logfp;
+    logfp = fopen(LOGFILE, "a+");
+    if (logfp == NULL)
     {
         perror("Open logfile error: ");
+        return;
     }
+    debugS("Creating buffer");
     strcat(buffer, theTime); //time ISO-8601 compliant
     strcat(buffer, " : ");
     strcat(buffer, inet_ntop(AF_INET, &(client.sin_addr), clBugg, len)); //ip address
@@ -222,12 +224,16 @@ void logToFile(struct sockaddr_in client, char* request, char* response, char* r
     strcat(buffer, request);
     strcat(buffer, " ");
     strcat(buffer, requestedUrl);
-    strcat(buffer, " : ");
+    strcat(buffer, ": ");
     strcat(buffer, response);
     strcat(buffer, "\n");
-    fprintf(fp, "%s", buffer);  
-    fclose(fp);
-    fp = NULL;
+    debugS(buffer);
+    fprintf(logfp, "%s", buffer);
+    debugS("Printing to filedescriptor");
+    fclose(logfp);
+    debugS("Closing filedescriptor");
+    logfp = NULL;
+    debugS("Returning from logtofile");
     return;
 }
 
@@ -261,7 +267,7 @@ void createHeader(char* header, int sizeOfContent)
  */
 void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage, GHashTable* requestHashTable)
 {
-
+    debugS("Inside generateHTML");
     int len = 20;
     char clBugg[len];
     char portID[2];
@@ -293,6 +299,7 @@ void generateHTML(char* buffer, struct sockaddr_in client, int method, char* pos
     }
     else
     {
+        debugS("It contains NO colour");
         strcat(buffer, "<body>\n");
         if (method == 0)
         {
@@ -314,6 +321,7 @@ void generateHTML(char* buffer, struct sockaddr_in client, int method, char* pos
     }
     strcat(buffer, "</body>\n");
     strcat(buffer, "</html>\n");
+    debugS("Finished creating HTML");
     return;
 }
 
@@ -349,6 +357,11 @@ void createUriHashTable(char* urlFromMessage, GHashTable* uriElements)
 void deleteAllUriHashTable(GHashTable* uriElements)
 {
     debugS("Inside delete all uri hash table");
+    if (g_hash_table_size(uriElements) == 0) 
+    { 
+        debugS("Nothing in HASHTABLE!");
+        return; 
+    }
     GHashTableIter elementIterator;
     g_hash_table_iter_init(&elementIterator, uriElements);
     gpointer hashKey, hashValue;  //gpointer used because expecting void**
@@ -371,6 +384,13 @@ void deleteAllUriHashTable(GHashTable* uriElements)
  gchar* keyToValueFromHashtable(GHashTable* uriElements, gchar* key)
  {
     debugS("Inside key to value iterator");
+    debugD("HashTable size = ", g_hash_table_size(uriElements));
+    if (g_hash_table_size(uriElements) == 0) 
+    { 
+        debugS("Nothing in HASHTABLE!");
+        return NULL; 
+    }
+
     GHashTableIter elementIterator;
     g_hash_table_iter_init(&elementIterator, uriElements);
     gpointer hashKey, hashValue;
@@ -384,5 +404,6 @@ void deleteAllUriHashTable(GHashTable* uriElements)
             }
         }
     } 
+    debugS("Key to value iterator finished");
     return NULL;
  }

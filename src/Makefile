@@ -2,6 +2,7 @@ CC = gcc
 DEBUG = -g3
 CPPFLAGS =
 CFLAGS = ${DEBUG} -std=c11 -D_XOPEN_SOURCE=700 -O2 -Wall -Wextra -Wformat=2
+PROTECTFLAGS = -fstack-protector-all -Wstack-protector -fno-omit-frame-pointer
 LDFLAGS =
 LOADLIBES =
 LDLIBS = 
@@ -13,7 +14,7 @@ INSTALLDIR = /usr/local/bin
 all: httpdserver
 
 httpdserver: debugging.o printing.o server.o httpd.o
-	${CC} ${CFLAGS} ${GLIBS} debugging.o printing.o server.o httpd.o -o httpd
+	${CC} ${CFLAGS} ${PROTECTFLAGS} ${GLIBS} debugging.o printing.o server.o httpd.o -o httpd
 
 debugging.o: libs/debugging.c
 	${CC} ${CFLAGS} ${GLIBS} libs/debugging.c -c
