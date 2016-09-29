@@ -19,30 +19,9 @@ void printToOutput(char* message, int length)
  * Function printToOutputRequest
  * for printing to output from requests with a timestamp
  */
-void printToOutputRequest(int whatToWrite, char* fileName, struct sockaddr_in clientAddr)
+void printToOutputSendHeader(char* header)
 {
-	/* whattowrite equals to
-	 *  1: Print out file request from client
-	 *  2: Print out timeout error if server does not receive ack from client within 10 sec
-	 *  3: Print out the finish of file transfer
-	 */
-	if (whatToWrite == 1)
-    {
-    	printTime();
-    	fprintf(stdout, "[+] File \"%s\" request from %s:%d\n", fileName, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
-    }
-    else
-    if (whatToWrite == 2)
-    {
-    	printTime();
-    	fprintf(stdout, "[+] File \"%s\" timout error for %s:%d\n", fileName, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
-    }
-    else
-    if (whatToWrite == 3)
-    {
-    	printTime();
-    	fprintf(stdout, "[+] File \"%s\" SUCCESS sent to %s:%d\n", fileName, inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));	
-    }
+	printf("%s\n", header);
 }
 
 /* 

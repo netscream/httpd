@@ -136,24 +136,45 @@ void bindListenInit(struct sockaddr_in server, int sockfd)
  */
 void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
 {
-    gchar** splitMessage = g_strsplit(message, " ", 3); // element[0] = request, element[1] = path+uri
+    gchar** splitMessage = g_strsplit(message, " ", 4); // element[0] = request, element[1] = path+uri
     gchar** splitToPath = g_strsplit(splitMessage[1], "/", -1);
     GHashTable* uriElements = g_hash_table_new(NULL, NULL); //lets create hash table
+    debugGMessage(splitMessage, g_strv_length(splitMessage));
 
     createUriHashTable(splitToPath[g_strv_length(splitToPath)-1], uriElements); 
-    debugGMessage(splitMessage, g_strv_length(splitMessage));
-    char* response = "HTTP/1.1 200 OK";
+    char* response;
     char* request = splitMessage[0];
     char* requestedURL = splitMessage[1];
+    printf("STUUUUUUUUUUFFFFFFFFFFFFF %s\n", splitMessage[2]);
+    if (!g_str_has_prefix(splitMessage[2], HTTP_VERSION))
+    {
+        debugS("HTTP version is wrong");
+        response = "505 HTTP Version Not Supported";
+        char header[512];
+        memset(&header, 0, 512);
+        char sendErrMessage[42];
+        memset(&sendErrMessage, 0, 42);
+        strcat(sendErrMessage, "Other: please use http version = ");
+        strcat(sendErrMessage, HTTP_VERSION);
+        createHeader(header, 0, 505, sendErrMessage);
+        int wrError = -1;
+        wrError = write(sockfd, &header, 512);
+        if ( wrError == -1)
+        {
+            perror("Write error: ");
+        }
+    }
+    else
     if (g_str_has_prefix(splitMessage[0], HTTP_GET))
     {
         debugS("GET");
+        response = "200 OK";
         char bufferHTML[2048];
         char bufferHEAD[512];
         memset(&bufferHTML, 0, 2048 );
         memset(&bufferHEAD, 0, 512);
         generateHTML(bufferHTML, *client, 0, NULL, requestedURL, uriElements);
-        createHeader(bufferHEAD, sizeof(bufferHTML));
+        createHeader(bufferHEAD, sizeof(bufferHTML), 200, NULL);
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
     }
@@ -161,6 +182,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
     if (g_str_has_prefix(splitMessage[0], HTTP_POST))
     {
         debugS("POST");
+        response = "200 OK";
         gchar** splitPostMessage = g_strsplit((gchar*) message, (gchar*) "\n", -1);
         gchar* postContent = splitPostMessage[g_strv_length(splitPostMessage)-1];
         char bufferHTML[2048];
@@ -168,7 +190,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         memset(&bufferHTML, 0, 2048);
         memset(&bufferHEAD, 0, 512);
         generateHTML(bufferHTML, *client, 1, postContent, requestedURL, uriElements);
-        createHeader(bufferHEAD, sizeof(bufferHTML));
+        createHeader(bufferHEAD, sizeof(bufferHTML), 200, NULL);
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
         g_strfreev(splitPostMessage);
@@ -177,10 +199,25 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
     if (g_str_has_prefix(splitMessage[0], HTTP_HEAD))
     {
         debugS("HEAD");
+        response = "200 OK";
         char header[512];
         memset(&header, 0, 512);
-        createHeader(header, 0);
+        createHeader(header, 0, 200, NULL);
         int wrError = -1; 
+        wrError = write(sockfd, &header, 512);
+        if ( wrError == -1)
+        {
+            perror("Write error: ");
+        }
+    }
+    else
+    {
+        debugS("OTHER");
+        response = "405 Method Not Allowed";
+        char header[512];
+        memset(&header, 0, 512);
+        createHeader(header, 0, 405, "Other: METHOD NOT SUPPORTED");
+        int wrError = -1;
         wrError = write(sockfd, &header, 512);
         if ( wrError == -1)
         {
@@ -225,7 +262,7 @@ void logToFile(struct sockaddr_in client, char* request, char* response, char* r
     strcat(buffer, request);
     strcat(buffer, " ");
     strcat(buffer, requestedUrl);
-    strcat(buffer, ": ");
+    strcat(buffer, " : ");
     strcat(buffer, response);
     strcat(buffer, "\n");
     debugS(buffer);
@@ -242,13 +279,36 @@ void logToFile(struct sockaddr_in client, char* request, char* response, char* r
  * Function createHeader
  * Creates the HEADER buffer
  */
-void createHeader(char* header, int sizeOfContent)
+void createHeader(char* header, int sizeOfContent, int statusCode, char* optionalMessage)
 {
     char theTime[40];
     getHeaderTime(theTime, 1);
     char theSizeOfContent[4];
     sprintf(theSizeOfContent, "%d", sizeOfContent);
-    strcat(header, "HTTP/1.1 200 OK\r\n");
+    if (statusCode == 505)
+    {
+        strcat(header, "HTTP/1.1 505 HTTP Version Not Supported\r\n");
+    }
+    else
+    if (statusCode == 405)
+    {
+        strcat(header, "HTTP/1.1 405 Method Not Allowed\r\n");
+        strcat(header, "Allow: GET, POST, HEADER\r\n");
+    }
+    else
+    if (statusCode == 404)
+    {
+        strcat(header, "HTTP/1.1 404 Not Found\r\n");
+    }
+    else
+    if (statusCode == 200)
+    {
+        strcat(header, "HTTP/1.1 200 OK\r\n");
+    }
+    else
+    {
+
+    }
     strcat(header, "Date: ");
     strcat(header, theTime);
     strcat(header, "\r\n");
@@ -258,7 +318,12 @@ void createHeader(char* header, int sizeOfContent)
     strcat(header, "\r\n");
     strcat(header, "Connection: static\r\n");
     strcat(header, "Server: Foo/1.0\r\n");
+    if (optionalMessage != NULL)
+    {
+        strcat(header, optionalMessage);
+    }
     strcat(header, "\r\n\r\n");
+    printToOutputSendHeader(header);
     return;
 }
 

@@ -18,13 +18,19 @@
 #include "printing.h"
 
 /* concurency specific macros */
-#define MAXCLIENTS 1
+#define MAXCLIENTS 10
 /* end of concurency spcific macros */
 
 /* HTTP specific macros */
+#define HTTP_VERSION "HTTP/1.1"
 #define HTTP_GET "GET"
 #define HTTP_POST "POST"
 #define HTTP_HEAD "HEAD"
+#define HTTP_PUT "PUT"
+#define HTTP_DELETE "DELETE"
+#define HTTP_CONNECT "CONNECT"
+#define HTTP_OPTIONS "OPTIONS"
+#define HTTP_TRACE "TRACE"
 #define COLOR_BG_PREFIX "colour?bg"
 /* end of HTTP specific macros */
 #define LOGFILE "httpd.log"
@@ -35,7 +41,7 @@ struct sockaddr_in serverStructInit(int PortNum);
 void bindListenInit(struct sockaddr_in server, int sockfd);
 void decodeMessage(int sockfd, struct sockaddr_in *client, char* message);
 void logToFile(struct sockaddr_in client, char* request, char* response, char* requestedUrl);
-void createHeader(char* header, int sizeOfContent);
+void createHeader(char* header, int sizeOfContent, int statusCode, char* optionalMessage);
 void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage, GHashTable* requestHashTable);
 void createUriHashTable(char* urlFromMessage, GHashTable* uriElements);
 void deleteAllUriHashTable(GHashTable* uriElements);

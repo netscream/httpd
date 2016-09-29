@@ -6,7 +6,7 @@
 #include "debugging.h"
 
 void printToOutput(char* message, int length);
-void printToOutputRequest(int whatToWrite, char* fileName, struct sockaddr_in clientAddr);
+void printToOutputSendHeader(char* header);
 void printToOutputError(char* message, struct sockaddr_in clientAddr);
 void printBanner();
 void getHeaderTime(char* buffer, int mode);
