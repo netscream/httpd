@@ -43,6 +43,7 @@ int runServer(int PortNum)
                     {
                         debugS("Trying to accept new connection");
                         newConnectionFd = accept(sockfd, (struct sockaddr*) &client, &clientLen);
+                        debugD("Connection filedescriptor", newConnectionFd);
                         if (newConnectionFd == -1)
                         {
                             perror("Accept error: ");

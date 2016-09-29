@@ -6,7 +6,9 @@ PROTECTFLAGS = -fstack-protector-all -Wstack-protector -fno-omit-frame-pointer
 LDFLAGS =
 LOADLIBES =
 LDLIBS = 
-GLIBS = `pkg-config --cflags --libs glib-2.0`
+GLIBUBUNTUFIX = -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include \
+    -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE
+GLIBS = ${GLIBUBUNTUFIX} `pkg-config --cflags --libs glib-2.0`
 INSTALLDIR = /usr/local/bin
 
 .DEFAULT: all
@@ -14,7 +16,7 @@ INSTALLDIR = /usr/local/bin
 all: httpdserver
 
 httpdserver: debugging.o printing.o server.o httpd.o
-	${CC} ${CFLAGS} ${PROTECTFLAGS} ${GLIBS} debugging.o printing.o server.o httpd.o -o httpd
+	${CC} ${CFLAGS} ${PROTECTFLAGS} ${GLIBS} debugging.o printing.o server.o httpd.o -lglib-2.0 -lm -o httpd
 
 debugging.o: libs/debugging.c
 	${CC} ${CFLAGS} ${GLIBS} libs/debugging.c -c
