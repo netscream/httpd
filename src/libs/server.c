@@ -136,16 +136,19 @@ void bindListenInit(struct sockaddr_in server, int sockfd)
  */
 void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
 {
+    printToOutputSendHeader(message, 1, *client);
     gchar** splitMessage = g_strsplit(message, " ", 4); // element[0] = request, element[1] = path+uri
     gchar** splitToPath = g_strsplit(splitMessage[1], "/", -1);
+    gchar** splitToRequestUrlPathFilter = g_strsplit(splitMessage[1], "?", -1);
+
     GHashTable* uriElements = g_hash_table_new(NULL, NULL); //lets create hash table
     debugGMessage(splitMessage, g_strv_length(splitMessage));
 
     createUriHashTable(splitToPath[g_strv_length(splitToPath)-1], uriElements); 
     char* response;
     char* request = splitMessage[0];
-    char* requestedURL = splitMessage[1];
-    printf("STUUUUUUUUUUFFFFFFFFFFFFF %s\n", splitMessage[2]);
+    char* requestedURL = splitToRequestUrlPathFilter[0];
+    /* Check if correct HTTP version */
     if (!g_str_has_prefix(splitMessage[2], HTTP_VERSION))
     {
         debugS("HTTP version is wrong");
@@ -156,7 +159,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         memset(&sendErrMessage, 0, 42);
         strcat(sendErrMessage, "Other: please use http version = ");
         strcat(sendErrMessage, HTTP_VERSION);
-        createHeader(header, 0, 505, sendErrMessage);
+        createHeader(header, 0, 505, sendErrMessage, client);
         int wrError = -1;
         wrError = write(sockfd, &header, 512);
         if ( wrError == -1)
@@ -164,7 +167,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
             perror("Write error: ");
         }
     }
-    else
+    else /* If request is GET request */
     if (g_str_has_prefix(splitMessage[0], HTTP_GET))
     {
         debugS("GET");
@@ -174,11 +177,11 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         memset(&bufferHTML, 0, 2048 );
         memset(&bufferHEAD, 0, 512);
         generateHTML(bufferHTML, *client, 0, NULL, requestedURL, uriElements);
-        createHeader(bufferHEAD, sizeof(bufferHTML), 200, NULL);
+        createHeader(bufferHEAD, sizeof(bufferHTML), 200, NULL, client);
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
     }
-    else
+    else /* if request is POST request */
     if (g_str_has_prefix(splitMessage[0], HTTP_POST))
     {
         debugS("POST");
@@ -190,19 +193,19 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         memset(&bufferHTML, 0, 2048);
         memset(&bufferHEAD, 0, 512);
         generateHTML(bufferHTML, *client, 1, postContent, requestedURL, uriElements);
-        createHeader(bufferHEAD, sizeof(bufferHTML), 200, NULL);
+        createHeader(bufferHEAD, sizeof(bufferHTML), 200, NULL, client);
         write(sockfd, &bufferHEAD, sizeof(bufferHEAD));
         write(sockfd, &bufferHTML, sizeof(bufferHTML));
         g_strfreev(splitPostMessage);
     }
-    else    
+    else /* if request is HEAD request */
     if (g_str_has_prefix(splitMessage[0], HTTP_HEAD))
     {
         debugS("HEAD");
         response = "200 OK";
         char header[512];
         memset(&header, 0, 512);
-        createHeader(header, 0, 200, NULL);
+        createHeader(header, 0, 200, NULL, client);
         int wrError = -1; 
         wrError = write(sockfd, &header, 512);
         if ( wrError == -1)
@@ -210,13 +213,13 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
             perror("Write error: ");
         }
     }
-    else
+    else /* All other requests are not allowed */
     {
         debugS("OTHER");
         response = "405 Method Not Allowed";
         char header[512];
         memset(&header, 0, 512);
-        createHeader(header, 0, 405, "Other: METHOD NOT SUPPORTED");
+        createHeader(header, 0, 405, "Other: METHOD NOT SUPPORTED", client);
         int wrError = -1;
         wrError = write(sockfd, &header, 512);
         if ( wrError == -1)
@@ -226,6 +229,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
     }
     logToFile(*client, request, response, requestedURL);
     deleteAllUriHashTable(uriElements);
+    g_strfreev(splitToRequestUrlPathFilter);
     g_strfreev(splitMessage);
     g_strfreev(splitToPath);
 }
@@ -279,7 +283,7 @@ void logToFile(struct sockaddr_in client, char* request, char* response, char* r
  * Function createHeader
  * Creates the HEADER buffer
  */
-void createHeader(char* header, int sizeOfContent, int statusCode, char* optionalMessage)
+void createHeader(char* header, int sizeOfContent, int statusCode, char* optionalMessage, struct sockaddr_in *client)
 {
     char theTime[40];
     getHeaderTime(theTime, 1);
@@ -323,7 +327,7 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
         strcat(header, optionalMessage);
     }
     strcat(header, "\r\n\r\n");
-    printToOutputSendHeader(header);
+    printToOutputSendHeader(header, 0, *client);
     return;
 }
 

@@ -1,4 +1,5 @@
 #include "printing.h" //include header file
+
 /* 
  * Function printToOutput
  * for printing to output with a timestamp
@@ -19,9 +20,19 @@ void printToOutput(char* message, int length)
  * Function printToOutputRequest
  * for printing to output from requests with a timestamp
  */
-void printToOutputSendHeader(char* header)
+void printToOutputSendHeader(char* header, int oneIfFromClient, struct sockaddr_in clientAddr)
 {
+    if (oneIfFromClient == 1)
+    {
+        printf("Header from client %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+    }
+    else
+    {
+        printf("Header sent to client %s:%d\n", inet_ntoa(clientAddr.sin_addr), ntohs(clientAddr.sin_port));
+    }
+    printf("-------------------------\n");
 	printf("%s\n", header);
+    printf("-------------------------\n\n");
 }
 
 /* 
