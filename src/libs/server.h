@@ -22,6 +22,8 @@
 /* end of concurency spcific macros */
 
 /* HTTP specific macros */
+#define HEADERSIZE 512
+#define HTMLSIZE 2048
 #define HTTP_VERSION "HTTP/1.1"
 #define HTTP_GET "GET"
 #define HTTP_POST "POST"

@@ -136,10 +136,8 @@ void bindListenInit(struct sockaddr_in server, int sockfd)
  */
 void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
 {
-    char bufferHTML[2048];
-    char header[512];
-    memset(&header, 0, 512);
-    memset(&bufferHTML, 0, 2048 );
+    char bufferHTML[HTMLSIZE];
+    char header[HEADERSIZE];
 
     printToOutputSendHeader(message, 1, *client);
     gchar** splitMessage = g_strsplit(message, " ", 4); // element[0] = request, element[1] = path+uri
@@ -164,7 +162,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         strcat(sendErrMessage, HTTP_VERSION);
         createHeader(header, 0, 505, sendErrMessage, client, uriElements);
         int wrError = -1;
-        wrError = write(sockfd, &header, 512);
+        wrError = write(sockfd, &header, HEADERSIZE);
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -177,8 +175,17 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         response = "200 OK";
         generateHTML(bufferHTML, *client, 0, NULL, requestedURL, uriElements);
         createHeader(header, sizeof(bufferHTML), 200, NULL, client, uriElements);
-        write(sockfd, &header, strlen(header));
-        write(sockfd, &bufferHTML, strlen(bufferHTML));
+        int wrError = -1;
+        wrError = write(sockfd, &header, HEADERSIZE);
+        if ( wrError == -1)
+        {
+            perror("Write error: ");
+        }
+        wrError = write(sockfd, &bufferHTML, HTMLSIZE);
+        if ( wrError == -1)
+        {
+            perror("Write error: ");
+        }
     }
     else /* if request is POST request */
     if (g_str_has_prefix(splitMessage[0], HTTP_POST))
@@ -189,8 +196,17 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         gchar* postContent = splitPostMessage[g_strv_length(splitPostMessage)-1];
         generateHTML(bufferHTML, *client, 1, postContent, requestedURL, uriElements);
         createHeader(header, sizeof(bufferHTML), 200, NULL, client, uriElements);
-        write(sockfd, &header, strlen(header));
-        write(sockfd, &bufferHTML, strlen(bufferHTML));
+        int wrError = -1;
+        wrError = write(sockfd, &header, HEADERSIZE);
+        if ( wrError == -1)
+        {
+            perror("Write error: ");
+        }
+        wrError = write(sockfd, &bufferHTML, HTMLSIZE);
+        if ( wrError == -1)
+        {
+            perror("Write error: ");
+        }
         g_strfreev(splitPostMessage);
     }
     else /* if request is HEAD request */
@@ -200,7 +216,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         response = "200 OK";
         createHeader(header, 0, 200, NULL, client, uriElements);
         int wrError = -1; 
-        wrError = write(sockfd, &header, strlen(header));
+        wrError = write(sockfd, &header, HEADERSIZE);
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -212,7 +228,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         response = "405 Method Not Allowed";
         createHeader(header, 0, 405, "Other: METHOD NOT SUPPORTED", client, uriElements);
         int wrError = -1;
-        wrError = write(sockfd, &header, strlen(header));
+        wrError = write(sockfd, &header, HEADERSIZE);
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -276,6 +292,7 @@ void logToFile(struct sockaddr_in client, char* request, char* response, char* r
  */
 void createHeader(char* header, int sizeOfContent, int statusCode, char* optionalMessage, struct sockaddr_in *client, GHashTable* requestHashTable)
 {
+    memset(header, 0, HEADERSIZE);
     char theTime[40];
     getHeaderTime(theTime, 1);
     char theSizeOfContent[4];
@@ -337,6 +354,7 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
  */
  void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage, GHashTable* requestHashTable)
 {
+    memset(buffer, 0, HTMLSIZE);
     debugS("Inside generateHTML");
     int len = 20;
     char clBugg[len];
