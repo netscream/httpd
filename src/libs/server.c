@@ -147,10 +147,12 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
     GHashTable* uriElements = g_hash_table_new(NULL, NULL); //lets create hash table
     debugGMessage(splitMessage, g_strv_length(splitMessage));
 
-    createUriHashTable(splitToPath[g_strv_length(splitToPath)-1], uriElements, message); 
+    createUriHashTable(splitToRequestUrlPathFilter[g_strv_length(splitToRequestUrlPathFilter)-1], uriElements, message); 
     char* response;
     char* request = splitMessage[0];
     char* requestedURL = splitToRequestUrlPathFilter[0];
+    //char* requestQuery = splitToPath[g_strv_length(splitToPath)-1];
+    char* requestQuery = splitToRequestUrlPathFilter[g_strv_length(splitToRequestUrlPathFilter)-1];
     /* Check if correct HTTP version */
     if (!g_str_has_prefix(splitMessage[2], HTTP_VERSION))
     {
@@ -173,7 +175,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
     {
         debugS("GET");
         response = "200 OK";
-        generateHTML(bufferHTML, *client, 0, NULL, requestedURL, uriElements);
+        generateHTML(bufferHTML, *client, 0, NULL, requestedURL, requestQuery, uriElements);
         int HTMLLEN = strlen(bufferHTML);
         createHeader(header, HTMLLEN, 200, NULL, client, uriElements);
         int wrError = -1;
@@ -195,7 +197,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         response = "200 OK";
         gchar** splitPostMessage = g_strsplit((gchar*) message, (gchar*) "\n", -1);
         gchar* postContent = splitPostMessage[g_strv_length(splitPostMessage)-1];
-        generateHTML(bufferHTML, *client, 1, postContent, requestedURL, uriElements);
+        generateHTML(bufferHTML, *client, 1, postContent, requestedURL, NULL, uriElements);
         int HTMLLEN = strlen(bufferHTML);
         createHeader(header, HTMLLEN, 200, NULL, client, uriElements);
         int wrError = -1;
@@ -227,8 +229,8 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
     else /* All other requests are not allowed */
     {
         debugS("OTHER");
-        response = "405 Method Not Allowed";
-        createHeader(header, 0, 405, "Other: METHOD NOT SUPPORTED", client, uriElements);
+        response = "418 I'm a teapot";
+        createHeader(header, 0, 418, "Other: METHOD NOT SUPPORTED", client, uriElements);
         int wrError = -1;
         wrError = write(sockfd, &header, strlen(header));
         if ( wrError == -1)
@@ -304,6 +306,11 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
         strcat(header, "HTTP/1.1 505 HTTP Version Not Supported\r\n");
     }
     else
+    if (statusCode == 418)
+    {
+        strcat(header, "HTTP/1.1 418 I'm a teapot\r\n");
+    }
+    else
     if (statusCode == 405)
     {
         strcat(header, "HTTP/1.1 405 Method Not Allowed\r\n");
@@ -354,7 +361,7 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
  * Function generateHTML
  * Creates the HTML code buffer, for writing to appropiate filedescriptor
  */
- void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage, GHashTable* requestHashTable)
+ void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage, char* queries, GHashTable* requestHashTable)
 {
     memset(buffer, 0, HTMLSIZE);
     debugS("Inside generateHTML");
@@ -387,8 +394,30 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
 
     debugGHashTable(requestHashTable);
     gchar* getColor = keyToValueFromHashtable(requestHashTable, COLOR_BG_PREFIX);
-    
-    if (0)
+    if (queries != NULL && strstr(requestPage, "test"))
+    {
+        strcat(buffer, "<h1>");
+        strcat(buffer, "http://foo.com");
+        if (requestPage[0] != '/')
+        {
+            strcat(buffer, "/");
+        }
+        else
+        {
+            strcat(buffer, requestPage);
+        }
+        strcat(buffer, " ");
+        strcat(buffer, inet_ntop(AF_INET, &(client.sin_addr), clBugg, len));
+        strcat(buffer, ":");
+        strcat(buffer, portID);
+        strcat(buffer, " ");
+        strcat(buffer, "</h1>\r\n");
+        strcat(buffer, "<h1>");
+        strcat(buffer, queries);
+        strcat(buffer, "</h1>\r\n");
+    }
+    else
+    if (getColor != NULL && (strstr(requestPage, "colour") || strstr(requestPage, "color")))
     {
         debugS("It contains colour");
         strcat(buffer, "<body style=\"background-color:");
@@ -397,35 +426,36 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
     }
     else
     {
-        debugS("It contains NO new colour in uri");
-        if (getColor != NULL)
-        {
-            strcat(buffer, "<body style=\"background-color:");
-            strcat(buffer, (gchar*) getColor);
-            strcat(buffer, "\">");
-        }
-        else
-        {
-            strcat(buffer, "<body>\r\n");
-        }
-
+        strcat(buffer, "<h1>\r\n");
         if (method == 0)
         {
-            strcat(buffer, "<h1> This is a test page </h1>\r\n");
-        }
-        else
-        {
             strcat(buffer, "<h1>");
-            if (postBuffer != NULL)
+            strcat(buffer, "http://foo.com");
+            if (requestPage[0] != '/')
             {
-                strcat(buffer, postBuffer);
+                strcat(buffer, "/");
             }
             else
             {
-                strcat(buffer, "No data posted, please try again!");
+                strcat(buffer, requestPage);
             }
-            strcat(buffer, "</h1>\r\n");   
+            strcat(buffer, " ");
+            strcat(buffer, inet_ntop(AF_INET, &(client.sin_addr), clBugg, len));
+            strcat(buffer, ":");
+            strcat(buffer, portID);
+            strcat(buffer, " ");
+            strcat(buffer, "</h1>\r\n");
         }
+        else
+        if (method == 1 && postBuffer != NULL)
+        {
+            strcat(buffer, postBuffer);
+        }
+        else
+        {
+            strcat(buffer, "No data posted, please try again!");
+        }
+        strcat(buffer, "</h1>\r\n");   
     }
     strcat(buffer, "</body>\r\n");
     strcat(buffer, "</html>\r\n");
@@ -442,20 +472,21 @@ void createUriHashTable(char* urlFromMessage, GHashTable* uriElements, char* mes
 {
     debugS("Inside create HashTable");
     debugTwoS("UrlMessage", urlFromMessage);
-
-    if (!strstr(urlFromMessage, "/") || urlFromMessage != NULL)
+    if (urlFromMessage != NULL && strstr(urlFromMessage, COLOR_BG_PREFIX) &&!strstr(urlFromMessage, "/"))
     {
         gchar** splitUrl = g_strsplit(urlFromMessage, "&", -1);
         for (int i = 0; splitUrl[i] != NULL; i++)
         {
             gchar** splitElement = g_strsplit(splitUrl[i], "=", -1); 
-            gpointer key = splitElement[0];
-            g_hash_table_add(uriElements, splitElement[0]);
-            gpointer value = splitElement[1];
-            g_hash_table_insert(uriElements, key, value);
+            gpointer key = g_memdup(splitElement[0], strlen(splitElement[0])+1);
+            gpointer value = g_memdup(splitElement[1], strlen(splitElement[1])+1);
+            g_hash_table_add(uriElements, key);
+            g_hash_table_insert(uriElements, key, value);            
+            g_strfreev(splitElement);
         }
         g_strfreev(splitUrl);
     }
+    else
     if (g_hash_table_size(uriElements) == 0 || keyToValueFromHashtable(uriElements, COLOR_BG_PREFIX) != NULL)
     {
         if (strstr(message, "Cookie"))
@@ -468,11 +499,12 @@ void createUriHashTable(char* urlFromMessage, GHashTable* uriElements, char* mes
                     gchar** splitCookie = g_strsplit(splitMessage[i], " ", -1);
                     if(g_hash_table_size(uriElements) == 0)
                     {
-                        char** splitElement = g_strsplit(splitCookie[1], "=", -1);
-                        gpointer key = splitElement[0];
-                        g_hash_table_add(uriElements, splitElement[0]);
-                        gpointer value = splitElement[1];
+                        gchar** splitElement = g_strsplit(splitCookie[1], "=", -1);
+                        gpointer key = g_memdup(splitElement[0], strlen(splitElement[0]+1));
+                        gpointer value = g_memdup(splitElement[1], strlen(splitElement[1])+1);
+                        g_hash_table_add(uriElements, key);
                         g_hash_table_insert(uriElements, key, value);
+                        g_strfreev(splitElement);
                     }
                     g_strfreev(splitCookie);
                 }
@@ -530,7 +562,6 @@ void deleteAllUriHashTable(GHashTable* uriElements)
     gpointer hashKey, hashValue;
     while(g_hash_table_iter_next(&elementIterator, &hashKey, &hashValue))
     {
-        printf("%s = %s", (char*) hashKey, (char*) hashValue);
         if (g_strcmp0((gchar*) &hashKey, key))
         {
             return ((gchar*) hashValue);
