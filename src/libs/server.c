@@ -162,7 +162,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         strcat(sendErrMessage, HTTP_VERSION);
         createHeader(header, 0, 505, sendErrMessage, client, uriElements);
         int wrError = -1;
-        wrError = write(sockfd, &header, HEADERSIZE);
+        wrError = write(sockfd, &header, strlen(header));
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -174,14 +174,15 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         debugS("GET");
         response = "200 OK";
         generateHTML(bufferHTML, *client, 0, NULL, requestedURL, uriElements);
-        createHeader(header, sizeof(bufferHTML), 200, NULL, client, uriElements);
+        int HTMLLEN = strlen(bufferHTML);
+        createHeader(header, HTMLLEN, 200, NULL, client, uriElements);
         int wrError = -1;
-        wrError = write(sockfd, &header, HEADERSIZE);
+        wrError = write(sockfd, &header, strlen(header));
         if ( wrError == -1)
         {
             perror("Write error: ");
         }
-        wrError = write(sockfd, &bufferHTML, HTMLSIZE);
+        wrError = write(sockfd, &bufferHTML, HTMLLEN);
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -195,14 +196,15 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         gchar** splitPostMessage = g_strsplit((gchar*) message, (gchar*) "\n", -1);
         gchar* postContent = splitPostMessage[g_strv_length(splitPostMessage)-1];
         generateHTML(bufferHTML, *client, 1, postContent, requestedURL, uriElements);
-        createHeader(header, sizeof(bufferHTML), 200, NULL, client, uriElements);
+        int HTMLLEN = strlen(bufferHTML);
+        createHeader(header, HTMLLEN, 200, NULL, client, uriElements);
         int wrError = -1;
-        wrError = write(sockfd, &header, HEADERSIZE);
+        wrError = write(sockfd, &header, strlen(header));
         if ( wrError == -1)
         {
             perror("Write error: ");
         }
-        wrError = write(sockfd, &bufferHTML, HTMLSIZE);
+        wrError = write(sockfd, &bufferHTML, HTMLLEN);
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -216,7 +218,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         response = "200 OK";
         createHeader(header, 0, 200, NULL, client, uriElements);
         int wrError = -1; 
-        wrError = write(sockfd, &header, HEADERSIZE);
+        wrError = write(sockfd, &header, strlen(header));
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -228,7 +230,7 @@ void decodeMessage(int sockfd, struct sockaddr_in *client, char* message)
         response = "405 Method Not Allowed";
         createHeader(header, 0, 405, "Other: METHOD NOT SUPPORTED", client, uriElements);
         int wrError = -1;
-        wrError = write(sockfd, &header, HEADERSIZE);
+        wrError = write(sockfd, &header, strlen(header));
         if ( wrError == -1)
         {
             perror("Write error: ");
@@ -360,8 +362,8 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
     char clBugg[len];
     char portID[2];
     sprintf(portID,"%d", ntohs(client.sin_port));
-    strcat(buffer, "<!DOCTYPE html>\n");
-    strcat(buffer, "<html>\n");
+    strcat(buffer, "<!DOCTYPE html>\r\n");
+    strcat(buffer, "<html>\r\n");
     strcat(buffer, "<title>");
     strcat(buffer, "http://foo.com");
     if (requestPage[0] != '/')
@@ -377,11 +379,11 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
     strcat(buffer, ":");
     strcat(buffer, portID);
     strcat(buffer, " ");
-    strcat(buffer, "</title>\n");
-    strcat(buffer, "<head>\n");
-    strcat(buffer, "<meta charset=\"UTF-8\">\n"); 
-    strcat(buffer, "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=ISO-8859-1\">\n");
-    strcat(buffer, "</head>\n");
+    strcat(buffer, "</title>\r\n");
+    strcat(buffer, "<head>\r\n");
+    strcat(buffer, "<meta charset=\"UTF-8\">\r\n"); 
+    strcat(buffer, "<meta http-equiv=\"Content-Type\" content=\"text/html;charset=ISO-8859-1\">\r\n");
+    strcat(buffer, "</head>\r\n");
 
     debugGHashTable(requestHashTable);
     gchar* getColor = keyToValueFromHashtable(requestHashTable, COLOR_BG_PREFIX);
@@ -404,12 +406,12 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
         }
         else
         {
-            strcat(buffer, "<body>\n");
+            strcat(buffer, "<body>\r\n");
         }
 
         if (method == 0)
         {
-            strcat(buffer, "<h1> This is a test page </h1>\n");
+            strcat(buffer, "<h1> This is a test page </h1>\r\n");
         }
         else
         {
@@ -422,11 +424,12 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
             {
                 strcat(buffer, "No data posted, please try again!");
             }
-            strcat(buffer, "</h1>\n");   
+            strcat(buffer, "</h1>\r\n");   
         }
     }
-    strcat(buffer, "</body>\n");
-    strcat(buffer, "</html>\n");
+    strcat(buffer, "</body>\r\n");
+    strcat(buffer, "</html>\r\n");
+    strcat(buffer, "\r\n\r\n");
     debugS("Finished creating HTML");
     return;
 }
