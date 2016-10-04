@@ -41,9 +41,9 @@ struct sockaddr_in serverStructInit(int PortNum);
 void bindListenInit(struct sockaddr_in server, int sockfd);
 void decodeMessage(int sockfd, struct sockaddr_in *client, char* message);
 void logToFile(struct sockaddr_in client, char* request, char* response, char* requestedUrl);
-void createHeader(char* header, int sizeOfContent, int statusCode, char* optionalMessage, struct sockaddr_in *client);
+void createHeader(char* header, int sizeOfContent, int statusCode, char* optionalMessage, struct sockaddr_in *client, GHashTable* requestHashTable);
 void generateHTML(char* buffer, struct sockaddr_in client, int method, char* postBuffer, char* requestPage, GHashTable* requestHashTable);
-void createUriHashTable(char* urlFromMessage, GHashTable* uriElements);
+void createUriHashTable(char* urlFromMessage, GHashTable* uriElements, char* message);
 void deleteAllUriHashTable(GHashTable* uriElements);
 gchar* keyToValueFromHashtable(GHashTable* uriElements, gchar* key);
 #endif
