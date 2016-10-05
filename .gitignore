@@ -1,4 +1,5 @@
 # Object files
+*.log
 *.o
 *.ko
 *.obj

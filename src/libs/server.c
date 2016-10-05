@@ -450,6 +450,7 @@ void createHeader(char* header, int sizeOfContent, int statusCode, char* optiona
         if (method == 1 && postBuffer != NULL)
         {
             strcat(buffer, postBuffer);
+            strcat(buffer, "\r\n");
         }
         else
         {
